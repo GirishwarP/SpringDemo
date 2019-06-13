@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+	   http://www.springframework.org/schema/beans 
+	   http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	   http://www.springframework.org/schema/context
+	   http://www.springframework.org/schema/context/spring-context-3.0.xsd"
+	   default-init-method="myInit" default-destroy-method="myDestroy"> <!-- global level method calling for each beans-->
+
+	<!-- 
+		Various points to remember : 
+		1. Autowiring : Autowire="ByName"(spring will automatically configure the bean with instance variables, if bean id/name is equal name of instance variables)
+				  		Autowire="ByType"(if all the properties in bean are of same type then spring will configure all beans automatically)
+				 		Autowire="constructor"(same as ByType, but instead of doing setter injection it will use constructor injection)
+				 	
+		2. Bean Scopes : Singleton(Only once per spring container(only one bean in container throughout)) :: Default scope
+					 	Prototype(new bean created with every request or reference)
+					 	Web-aware context Bean scopes : 
+					 	request(new bean is created per servlet request)
+					 	Session(new bean is created per session)
+					 	Global session(new bean is created per global HTTP session)
+	-->
+	<context:annotation-config/>
+	
+	<bean id="triangle" class="com.first.Triangle" name="triangle-name" init-method="myInit" destroy-method="myDestroy"> <!-- name is alternative to id -->
+		<property name="type" value="Equilateral" /> 					 <!-- Setter injection -->
+		<constructor-arg index="0" type="int" value="10" />				 <!-- Constructor injection('type' and 'index' given is optional)-->
+		<property name="pointA" ref="zeroPoint"/>						 <!-- Object injection -->
+		<property name="pointB">
+			<bean class="com.first.Point">								 <!-- Inner Bean(Specific to pointB) id is not required-->
+   				<property name="xPoint" value="20"/>
+   				<property name="yPoint" value="0"/>
+   			</bean>
+		</property>
+		<property name="pointC">
+			<bean class="com.first.Point">								 <!-- Inner Bean(Specific to pointC) id is not required-->
+   				<property name="xPoint" value="10"/>
+   				<property name="yPoint" value="10"/>
+   			</bean>
+		</property>
+		
+		<!-- Use of List using inner bean and reference-->
+		<property name="pointList">
+			<list>
+				<ref bean="zeroPoint" />
+				<bean class="com.first.Point">							 <!-- Inner Bean(Specific to pointB) id is not required-->
+   					<property name="xPoint" value="20"/>
+   					<property name="yPoint" value="0"/>
+   				</bean>
+				<bean class="com.first.Point">							 <!-- Inner Bean(Specific to pointC) id is not required-->
+   					<property name="xPoint" value="10"/>
+   					<property name="yPoint" value="10"/>
+   				</bean>
+   			</list>
+   		</property>
+	</bean>
+	
+   	<bean id="zeroPoint" class="com.first.Point">
+   		<qualifier value="centerPoint" />
+   		<property name="xPoint" value="0"/>
+   		<property name="yPoint" value="0"/>
+   	</bean>
+   	
+   	<bean id="circle" class="com.first.Circle">
+   		<property name="center" ref="zeroPoint" />
+   	</bean>
+   	
+   	<alias name="triangle" alias="triangle-alias" /> <!-- alias for triangle -->
+   	<bean class="com.first.DisplayBeanNamePostProcessor"/>
+   	<bean class="com.first.MyBeanFactoryPostProcessor" />
+   	<bean class="org.springframework.beans.factory.annotation.RequiredAnnotationBeanPostProcessor"/>
+</beans>
